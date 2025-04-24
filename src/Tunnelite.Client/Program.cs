@@ -23,15 +23,22 @@ public class Program
             () => "https://tunnelite.com",
             "The public server URL.");
 
+        var subDomainOption = new Option<string>(
+            "--subdomain",
+            () =>null,
+            "The subdomain to use for the tunnel. Only applicable for HTTP(S) tunnels.");
+
         var rootCommand = new RootCommand
         {
             localUrlArgument,
             publicUrlOption,
-            logLevelOption
+            logLevelOption,
+            subDomainOption
         };
         rootCommand.Description = "CLI tool to create a tunnel to a local server.";
 
-        rootCommand.SetHandler(async (string localUrl, string publicUrl, LogLevel? logLevel) =>
+        rootCommand.SetHandler(async (string localUrl, string publicUrl, LogLevel? logLevel, string? subdomain) =>
+
         {
             if (string.IsNullOrWhiteSpace(localUrl))
             {
@@ -68,8 +75,7 @@ public class Program
 
                         case "http":
                         case "https":
-
-                            await InitializeHttpTunnel(localUrl, publicUrl, logLevel, ctx);
+                            await InitializeHttpTunnel(localUrl, publicUrl, logLevel, subdomain, ctx);
                             break;
 
                         default:
@@ -80,7 +86,7 @@ public class Program
 
             await RunMainLoop(localUrl);
 
-        }, localUrlArgument, publicUrlOption, logLevelOption);
+        }, localUrlArgument, publicUrlOption, logLevelOption, subDomainOption);
 
         await rootCommand.InvokeAsync(args);
     }
@@ -107,13 +113,14 @@ public class Program
         ctx.Status("TCP tunnel established.");
     }
 
-    private static async Task InitializeHttpTunnel(string localUrl, string publicUrl, LogLevel? logLevel, StatusContext ctx)
+    private static async Task InitializeHttpTunnel(string localUrl, string publicUrl, LogLevel? logLevel, string? subdomain, StatusContext ctx)
     {
         var httpTunnel = new HttpTunnelRequest
         {
             ClientId = ClientId,
             LocalUrl = localUrl,
             PublicUrl = publicUrl,
+            Subdomain = subdomain,
         };
 
         ctx.Status("Connecting to HTTP tunnel...");

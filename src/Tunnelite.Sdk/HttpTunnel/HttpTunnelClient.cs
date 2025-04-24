@@ -262,7 +262,7 @@ public class HttpTunnelClient : ITunnelClient
 
     private async Task<HttpTunnelResponse?> RegisterTunnelAsync(HttpTunnelRequest tunnel)
     {
-        tunnel.Subdomain = _currentTunnel?.Subdomain;
+        tunnel.Subdomain =  _currentTunnel?.Subdomain ?? tunnel.Subdomain;
 
         HttpTunnelResponse? tunnelResponse = null;
 
